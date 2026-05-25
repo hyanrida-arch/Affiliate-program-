@@ -1,0 +1,1561 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Smart Home Affiliate — Project Dashboard</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700;900&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #0a0a0f;
+    --surface: #111118;
+    --card: #16161f;
+    --border: #1e1e2e;
+    --accent: #00d4aa;
+    --accent2: #ff6b35;
+    --accent3: #7c3aed;
+    --gold: #f59e0b;
+    --text: #e2e8f0;
+    --muted: #64748b;
+    --success: #10b981;
+    --danger: #ef4444;
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: 'Inter', sans-serif;
+    min-height: 100vh;
+    overflow-x: hidden;
+  }
+
+  /* Background grid */
+  body::before {
+    content: '';
+    position: fixed;
+    inset: 0;
+    background-image:
+      linear-gradient(rgba(0,212,170,0.03) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(0,212,170,0.03) 1px, transparent 1px);
+    background-size: 40px 40px;
+    pointer-events: none;
+    z-index: 0;
+  }
+
+  .container {
+    max-width: 1100px;
+    margin: 0 auto;
+    padding: 20px;
+    position: relative;
+    z-index: 1;
+  }
+
+  /* HEADER */
+  .header {
+    text-align: center;
+    padding: 40px 0 30px;
+    position: relative;
+  }
+
+  .header-badge {
+    display: inline-block;
+    background: linear-gradient(135deg, rgba(0,212,170,0.15), rgba(124,58,237,0.15));
+    border: 1px solid rgba(0,212,170,0.3);
+    padding: 6px 18px;
+    border-radius: 50px;
+    font-size: 11px;
+    font-family: 'Space Mono', monospace;
+    color: var(--accent);
+    letter-spacing: 2px;
+    margin-bottom: 16px;
+  }
+
+  .header h1 {
+    font-size: clamp(28px, 5vw, 48px);
+    font-weight: 900;
+    line-height: 1.1;
+    background: linear-gradient(135deg, #fff 0%, var(--accent) 50%, var(--accent3) 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+  }
+
+  .header-sub {
+    color: var(--muted);
+    margin-top: 10px;
+    font-size: 15px;
+  }
+
+  .amazon-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    background: rgba(245,158,11,0.1);
+    border: 1px solid rgba(245,158,11,0.3);
+    padding: 8px 16px;
+    border-radius: 8px;
+    margin-top: 16px;
+    font-size: 13px;
+    color: var(--gold);
+  }
+
+  .dot { width: 8px; height: 8px; border-radius: 50%; background: var(--gold); animation: pulse 2s infinite; }
+  @keyframes pulse { 0%,100%{opacity:1} 50%{opacity:0.3} }
+
+  /* STATS ROW */
+  .stats-row {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+    gap: 12px;
+    margin: 30px 0;
+  }
+
+  .stat-card {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 18px;
+    text-align: center;
+    transition: border-color 0.3s;
+  }
+  .stat-card:hover { border-color: var(--accent); }
+  .stat-value { font-size: 26px; font-weight: 900; font-family: 'Space Mono', monospace; }
+  .stat-label { font-size: 12px; color: var(--muted); margin-top: 4px; }
+  .stat-card.green .stat-value { color: var(--accent); }
+  .stat-card.orange .stat-value { color: var(--accent2); }
+  .stat-card.purple .stat-value { color: var(--accent3); }
+  .stat-card.gold .stat-value { color: var(--gold); }
+
+  /* TABS */
+  .tabs {
+    display: flex;
+    gap: 8px;
+    margin-bottom: 24px;
+    flex-wrap: wrap;
+  }
+
+  .tab {
+    padding: 10px 20px;
+    border-radius: 8px;
+    border: 1px solid var(--border);
+    background: var(--card);
+    color: var(--muted);
+    cursor: pointer;
+    font-family: 'Inter', sans-serif;
+    font-size: 14px;
+    font-weight: 600;
+    transition: all 0.2s;
+  }
+  .tab:hover { border-color: var(--accent); color: var(--text); }
+  .tab.active { background: var(--accent); color: #000; border-color: var(--accent); }
+
+  /* PANELS */
+  .panel { display: none; }
+  .panel.active { display: block; animation: fadeIn 0.3s ease; }
+  @keyframes fadeIn { from{opacity:0;transform:translateY(8px)} to{opacity:1;transform:translateY(0)} }
+
+  /* SECTION TITLE */
+  .section-title {
+    font-size: 18px;
+    font-weight: 700;
+    margin-bottom: 16px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+  .section-title::after {
+    content: '';
+    flex: 1;
+    height: 1px;
+    background: var(--border);
+  }
+
+  /* WEEK CARDS */
+  .week-grid { display: grid; gap: 16px; }
+
+  .week-card {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 14px;
+    overflow: hidden;
+    transition: border-color 0.3s;
+  }
+  .week-card:hover { border-color: rgba(0,212,170,0.3); }
+
+  .week-header {
+    padding: 16px 20px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    cursor: pointer;
+    user-select: none;
+  }
+
+  .week-title {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    font-weight: 700;
+    font-size: 16px;
+  }
+
+  .week-num {
+    width: 36px; height: 36px;
+    border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+    font-family: 'Space Mono', monospace;
+    font-size: 14px; font-weight: 700;
+    flex-shrink: 0;
+  }
+  .week-num.w1 { background: rgba(0,212,170,0.15); color: var(--accent); border: 1px solid var(--accent); }
+  .week-num.w2 { background: rgba(255,107,53,0.15); color: var(--accent2); border: 1px solid var(--accent2); }
+  .week-num.w3 { background: rgba(124,58,237,0.15); color: var(--accent3); border: 1px solid var(--accent3); }
+  .week-num.w4 { background: rgba(245,158,11,0.15); color: var(--gold); border: 1px solid var(--gold); }
+
+  .week-progress-bar {
+    height: 3px;
+    background: var(--border);
+  }
+  .week-progress-fill {
+    height: 100%;
+    border-radius: 2px;
+    transition: width 0.5s ease;
+  }
+  .w1 .week-progress-fill { background: var(--accent); }
+  .w2 .week-progress-fill { background: var(--accent2); }
+  .w3 .week-progress-fill { background: var(--accent3); }
+  .w4 .week-progress-fill { background: var(--gold); }
+
+  .week-body { padding: 0 20px 20px; }
+
+  /* TASKS */
+  .tasks-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 12px;
+    margin-top: 16px;
+  }
+
+  @media(max-width: 600px) { .tasks-grid { grid-template-columns: 1fr; } }
+
+  .person-tasks {
+    background: var(--surface);
+    border-radius: 10px;
+    padding: 14px;
+    border: 1px solid var(--border);
+  }
+
+  .person-label {
+    font-size: 12px;
+    font-weight: 700;
+    letter-spacing: 1px;
+    margin-bottom: 10px;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+  }
+  .person-label.you { color: var(--accent); }
+  .person-label.friend { color: var(--accent2); }
+
+  .task-item {
+    display: flex;
+    align-items: flex-start;
+    gap: 10px;
+    padding: 8px 0;
+    border-bottom: 1px solid var(--border);
+    cursor: pointer;
+  }
+  .task-item:last-child { border-bottom: none; }
+
+  .task-check {
+    width: 18px; height: 18px;
+    border-radius: 4px;
+    border: 2px solid var(--muted);
+    flex-shrink: 0;
+    margin-top: 2px;
+    transition: all 0.2s;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 11px;
+  }
+  .task-item.done .task-check {
+    background: var(--success);
+    border-color: var(--success);
+    color: white;
+  }
+  .task-item.done .task-text { text-decoration: line-through; color: var(--muted); }
+  .task-text { font-size: 13px; line-height: 1.5; }
+
+  /* SHARED TASKS */
+  .shared-tasks {
+    background: rgba(124,58,237,0.05);
+    border: 1px solid rgba(124,58,237,0.2);
+    border-radius: 10px;
+    padding: 14px;
+    margin-top: 12px;
+  }
+
+  /* SKILLS PANEL */
+  .skills-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+    gap: 16px;
+  }
+
+  .skill-card {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 14px;
+    padding: 20px;
+    transition: border-color 0.3s;
+  }
+  .skill-card:hover { border-color: var(--accent); }
+
+  .skill-icon { font-size: 28px; margin-bottom: 10px; }
+  .skill-name { font-size: 16px; font-weight: 700; margin-bottom: 6px; }
+  .skill-desc { font-size: 12px; color: var(--muted); line-height: 1.7; }
+  .skill-priority {
+    display: inline-block;
+    margin-top: 10px;
+    padding: 3px 10px;
+    border-radius: 50px;
+    font-size: 11px;
+    font-weight: 700;
+  }
+  .priority-high { background: rgba(239,68,68,0.15); color: var(--danger); }
+  .priority-mid { background: rgba(245,158,11,0.15); color: var(--gold); }
+  .priority-low { background: rgba(16,185,129,0.15); color: var(--success); }
+
+  /* TRACKER PANEL */
+  .tracker-section { margin-bottom: 30px; }
+
+  .metric-row {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 12px;
+    margin-bottom: 12px;
+  }
+
+  .metric-input-card {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 16px;
+  }
+
+  .metric-label { font-size: 12px; color: var(--muted); margin-bottom: 8px; font-weight: 600; }
+
+  .metric-input {
+    width: 100%;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 10px 14px;
+    color: var(--text);
+    font-family: 'Space Mono', monospace;
+    font-size: 18px;
+    font-weight: 700;
+    text-align: center;
+  }
+  .metric-input:focus { outline: none; border-color: var(--accent); }
+
+  .progress-section {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 14px;
+    padding: 20px;
+    margin-bottom: 16px;
+  }
+
+  .progress-label {
+    display: flex;
+    justify-content: space-between;
+    font-size: 13px;
+    margin-bottom: 8px;
+  }
+
+  .progress-track {
+    height: 10px;
+    background: var(--surface);
+    border-radius: 5px;
+    overflow: hidden;
+    margin-bottom: 6px;
+  }
+
+  .progress-fill {
+    height: 100%;
+    border-radius: 5px;
+    transition: width 0.8s cubic-bezier(0.34,1.56,0.64,1);
+  }
+
+  .chevron { transition: transform 0.3s; font-size: 12px; color: var(--muted); }
+  .week-card.open .chevron { transform: rotate(180deg); }
+  .week-body { display: none; }
+  .week-card.open .week-body { display: block; }
+
+  /* NOTES */
+  .notes-area {
+    width: 100%;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 14px;
+    color: var(--text);
+    font-family: 'Inter', sans-serif;
+    font-size: 14px;
+    min-height: 120px;
+    resize: vertical;
+    margin-top: 16px;
+  }
+  .notes-area:focus { outline: none; border-color: var(--accent); }
+
+  .save-btn {
+    margin-top: 10px;
+    padding: 10px 24px;
+    background: var(--accent);
+    color: #000;
+    border: none;
+    border-radius: 8px;
+    font-family: 'Inter', sans-serif;
+    font-weight: 700;
+    font-size: 14px;
+    cursor: pointer;
+    transition: opacity 0.2s;
+  }
+  .save-btn:hover { opacity: 0.85; }
+
+  .toast {
+    position: fixed;
+    bottom: 24px;
+    left: 50%;
+    transform: translateX(-50%) translateY(80px);
+    background: var(--success);
+    color: #000;
+    padding: 12px 24px;
+    border-radius: 50px;
+    font-weight: 700;
+    font-size: 14px;
+    transition: transform 0.4s cubic-bezier(0.34,1.56,0.64,1);
+    z-index: 999;
+  }
+  .toast.show { transform: translateX(-50%) translateY(0); }
+
+  .tag {
+    display: inline-block;
+    padding: 2px 8px;
+    border-radius: 4px;
+    font-size: 10px;
+    font-weight: 700;
+    margin-right: 4px;
+  }
+  .tag-yt { background: rgba(239,68,68,0.2); color: #f87171; }
+  .tag-tt { background: rgba(0,0,0,0.5); color: #fff; border: 1px solid #333; }
+  .tag-pt { background: rgba(239,68,68,0.2); color: #f43f5e; }
+  .tag-blog { background: rgba(0,212,170,0.15); color: var(--accent); }
+  .tag-amz { background: rgba(245,158,11,0.15); color: var(--gold); }
+
+  /* ADS */
+  .ads-tabs-row { display:flex; gap:8px; flex-wrap:wrap; margin-bottom:20px; }
+  .ads-tab-btn { padding:10px 18px; border-radius:8px; border:1px solid var(--border); background:var(--card); color:var(--muted); cursor:pointer; font-family:'Cairo',sans-serif; font-size:14px; font-weight:600; transition:all 0.2s; }
+  .ads-tab-btn:hover,.ads-tab-btn.active { background:var(--accent); color:#000; border-color:var(--accent); }
+  .ads-card { background:var(--card); border:1px solid var(--border); border-radius:14px; overflow:hidden; }
+  .ads-header { display:flex; align-items:center; gap:16px; padding:20px; }
+  .ads-meta { display:grid; grid-template-columns:1fr 1fr; gap:12px; padding:16px 20px; }
+  .ads-meta-item { background:var(--surface); border-radius:8px; padding:12px; }
+  .ads-meta-label { font-size:11px; color:var(--muted); margin-bottom:4px; }
+  .ads-meta-val { font-size:15px; font-weight:700; }
+  .ads-steps-title { padding:0 20px 10px; font-weight:700; font-size:14px; color:var(--muted); }
+  .ads-step { display:flex; align-items:flex-start; gap:12px; padding:8px 20px; }
+  .ads-step-num { width:26px; height:26px; border-radius:50%; display:flex; align-items:center; justify-content:center; font-size:12px; font-weight:700; flex-shrink:0; }
+  .ads-step-text { font-size:13px; line-height:1.6; padding-top:3px; }
+  .ads-tip { margin:16px 20px 20px; background:rgba(245,158,11,0.08); border:1px solid rgba(245,158,11,0.2); border-radius:10px; padding:14px; font-size:13px; color:var(--gold); line-height:1.7; }
+
+  /* GOALS */
+  .goals-chart-wrap { background:var(--card); border:1px solid var(--border); border-radius:14px; padding:20px; margin-bottom:24px; }
+  .goals-chart-title { font-size:14px; font-weight:700; color:var(--muted); margin-bottom:16px; }
+  #goals-chart { display:flex; align-items:flex-end; gap:6px; height:120px; }
+  .chart-bar-wrap { flex:1; display:flex; flex-direction:column; align-items:center; gap:4px; height:100%; }
+  .chart-bar-label { font-size:9px; font-weight:700; font-family:'Space Mono',monospace; }
+  .chart-bar-track { flex:1; width:100%; background:var(--surface); border-radius:4px 4px 0 0; display:flex; flex-direction:column; justify-content:flex-end; overflow:hidden; }
+  .chart-bar-fill { width:100%; border-radius:4px 4px 0 0; transition:height 0.8s cubic-bezier(0.34,1.56,0.64,1); }
+  .chart-bar-month { font-size:8px; color:var(--muted); text-align:center; }
+  .goal-row { background:var(--card); border:1px solid var(--border); border-radius:12px; padding:16px; margin-bottom:12px; }
+  .goal-month { font-size:14px; font-weight:700; border-right:3px solid; padding-right:10px; margin-bottom:12px; }
+  .goal-fields { display:grid; grid-template-columns:1fr 1fr 1fr; gap:10px; }
+  @media(max-width:500px){ .goal-fields{grid-template-columns:1fr 1fr;} }
+  .goal-field-label { font-size:11px; color:var(--muted); margin-bottom:4px; }
+  .goal-input { width:100%; background:var(--surface); border:1px solid var(--border); border-radius:6px; padding:8px 10px; color:var(--text); font-family:'Space Mono',monospace; font-size:14px; font-weight:700; }
+  .goal-input:focus { outline:none; border-color:var(--accent); }
+  .goals-save-btn { margin-top:16px; padding:12px 28px; background:var(--accent); color:#000; border:none; border-radius:8px; font-family:'Cairo',sans-serif; font-weight:700; font-size:14px; cursor:pointer; }
+
+  /* LOGIN */
+  .login-overlay {
+    position: fixed; inset: 0; z-index: 9999;
+    background: #0a0a0f;
+    display: flex; align-items: center; justify-content: center;
+    flex-direction: column;
+  }
+  .login-box {
+    background: #16161f;
+    border: 1px solid #1e1e2e;
+    border-radius: 20px;
+    padding: 40px 36px;
+    width: 100%; max-width: 380px;
+    text-align: center;
+  }
+  .login-logo { font-size: 40px; margin-bottom: 10px; }
+  .login-title { font-size: 22px; font-weight: 900; margin-bottom: 4px;
+    background: linear-gradient(135deg, #fff, #00d4aa);
+    -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
+  .login-sub { font-size: 13px; color: #64748b; margin-bottom: 28px; }
+  .login-field { margin-bottom: 14px; text-align: right; }
+  .login-label { font-size: 12px; color: #64748b; margin-bottom: 6px; display: block; }
+  .login-input {
+    width: 100%; background: #111118; border: 1px solid #1e1e2e;
+    border-radius: 10px; padding: 12px 16px; color: #e2e8f0;
+    font-family: 'Inter', sans-serif; font-size: 15px;
+    transition: border-color 0.2s;
+  }
+  .login-input:focus { outline: none; border-color: #00d4aa; }
+  .login-btn {
+    width: 100%; padding: 14px; background: #00d4aa; color: #000;
+    border: none; border-radius: 10px; font-family: 'Inter', sans-serif;
+    font-weight: 700; font-size: 16px; cursor: pointer; margin-top: 8px;
+    transition: opacity 0.2s;
+  }
+  .login-btn:hover { opacity: 0.85; }
+  .login-error {
+    color: #ef4444; font-size: 13px; margin-top: 10px;
+    display: none;
+  }
+  .login-users { display: flex; gap: 10px; margin-bottom: 24px; }
+  .login-user-btn {
+    flex: 1; padding: 12px 8px; border-radius: 10px;
+    border: 2px solid #1e1e2e; background: #111118;
+    color: #64748b; cursor: pointer; font-family: 'Inter', sans-serif;
+    font-size: 13px; font-weight: 600; transition: all 0.2s;
+  }
+  .login-user-btn.selected { border-color: #00d4aa; color: #00d4aa; background: rgba(0,212,170,0.08); }
+  .login-user-btn:nth-child(2).selected { border-color: #ff6b35; color: #ff6b35; background: rgba(255,107,53,0.08); }
+
+  /* USER BAR */
+  .user-bar {
+    display: flex; align-items: center; justify-content: space-between;
+    background: #16161f; border: 1px solid #1e1e2e; border-radius: 10px;
+    padding: 10px 16px; margin-bottom: 16px;
+  }
+  .user-bar-name { font-size: 14px; font-weight: 700; }
+  .user-bar-name.reda { color: #00d4aa; }
+  .user-bar-name.hicham { color: #ff6b35; }
+  .logout-btn {
+    padding: 6px 14px; background: transparent; border: 1px solid #1e1e2e;
+    border-radius: 6px; color: #64748b; cursor: pointer;
+    font-family: 'Inter', sans-serif; font-size: 12px; transition: all 0.2s;
+  }
+  .logout-btn:hover { border-color: #ef4444; color: #ef4444; }
+
+  /* COURSES */
+  .course-card { background:var(--card); border:1px solid var(--border); border-radius:14px; padding:20px; margin-bottom:14px; transition:border-color 0.3s; }
+  .course-card:hover { border-color: rgba(0,212,170,0.4); }
+  .course-header { display:flex; align-items:center; gap:14px; margin-bottom:12px; }
+  .course-icon { width:44px; height:44px; border-radius:10px; display:flex; align-items:center; justify-content:center; font-size:22px; flex-shrink:0; }
+  .course-name { font-size:15px; font-weight:700; }
+  .course-meta { font-size:11px; color:var(--muted); margin-top:3px; }
+  .course-badge { padding:3px 10px; border-radius:50px; font-size:11px; font-weight:700; margin-right: auto; flex-shrink:0; }
+  .course-badge.free { background:rgba(16,185,129,0.15); color:var(--success); }
+  .course-badge.paid { background:rgba(245,158,11,0.15); color:var(--gold); }
+  .course-desc { font-size:13px; color:var(--muted); line-height:1.7; margin-bottom:12px; }
+  .course-link { display:inline-block; padding:8px 16px; background:var(--surface); border:1px solid var(--border); border-radius:8px; color:var(--accent); font-size:13px; font-weight:600; text-decoration:none; transition:all 0.2s; }
+  .course-link:hover { background:rgba(0,212,170,0.1); border-color:var(--accent); }
+</style>
+</head>
+<body>
+
+<!-- LOGIN OVERLAY -->
+<div class="login-overlay" id="loginOverlay">
+  <div class="login-box">
+    <div class="login-logo">🏠</div>
+    <div class="login-title">Smart Home Affiliate</div>
+    <div class="login-sub">Sign in to continue</div>
+    <div class="login-users">
+      <button class="login-user-btn selected" id="btnReda" onclick="selectUser('reda')"> Mohamed Reda</button>
+      <button class="login-user-btn" id="btnHicham" onclick="selectUser('hicham')"> Hicham</button>
+    </div>
+
+    <div class="login-field">
+      <label class="login-label">Username</label>
+      <input class="login-input" id="loginUser" type="text" placeholder="mohamedreda or hicham">
+    </div>
+    <div class="login-field">
+      <label class="login-label">Password</label>
+      <input class="login-input" id="loginPass" type="password" placeholder="••••••••" onkeydown="if(event.key==='Enter')doLogin()">
+    </div>
+    <button class="login-btn" onclick="doLogin()"> Sign In 🔐</button>
+    <div class="login-error" id="loginError"> Username أو Password ❌</div>
+  </div>
+</div>
+
+<div class="container">
+
+  <!-- HEADER -->
+  <div class="header">
+    <div class="header-badge">SMART HOME AFFILIATE · 2025-2026</div>
+    <h1>Project Dashboard</h1>
+    <p class="header-sub">Mohamed Reda (Admin) + Hicham · US & Canadian Market</p>
+    <div class="amazon-badge">
+      <div class="dot"></div>
+      Amazon Associates · achrafkhaldan-20 · Bronze Status
+    </div>
+  </div>
+
+
+  <!-- USER BAR -->
+  <div class="user-bar" id="userBar" style="display:none">
+    <div style="display:flex;align-items:center;gap:10px"><div class="user-bar-name" id="userBarName"></div><span id="roleBadge" style="font-size:11px;font-weight:700;padding:3px 8px;border-radius:50px;background:rgba(255,255,255,0.05)"></span></div>
+    <button class="logout-btn" onclick="doLogout()"> Logout 🚪 </button>
+  </div>
+
+  <!-- STATS -->
+  <div class="stats-row">
+    <div class="stat-card green">
+      <div class="stat-value">$0</div>
+      <div class="stat-label">Current Earnings</div>
+    </div>
+    <div class="stat-card orange">
+      <div class="stat-value">0</div>
+      <div class="stat-label">Amazon Clicks</div>
+    </div>
+    <div class="stat-card gold">
+      <div class="stat-value">$2K</div>
+      <div class="stat-label">Monthly Goal</div>
+    </div>
+    <div class="stat-card purple">
+      <div class="stat-value">~12</div>
+      <div class="stat-label">Months to Goal</div>
+    </div>
+  </div>
+
+  <!-- TABS -->
+  <div class="tabs">
+    <button class="tab active" onclick="showPanel('plan')">📅 July Plan</button>
+    <button class="tab" onclick="showPanel('skills')">📚 Basics</button>
+    <button class="tab" onclick="showPanel('ads')">🎯 Ads</button>
+    <button class="tab" onclick="showPanel('goals')">🏆 Goals</button>
+    <button class="tab" onclick="showPanel('courses')">🎓 Courses</button>
+    <button class="tab" onclick="showPanel('tracker')">📊 Tracker</button>
+  </div>
+
+  <!-- PLAN PANEL -->
+  <div id="panel-plan" class="panel active">
+
+    <div class="section-title">🗓 July Plan — Week by Week</div>
+
+    <div class="week-grid">
+
+      <!-- WEEK 1 -->
+      <div class="week-card w1" id="wk1">
+        <div class="week-progress-bar w1"><div class="week-progress-fill" style="width:0%"></div></div>
+        <div class="week-header" onclick="toggleWeek('wk1')">
+          <div class="week-title">
+            <div class="week-num w1">01</div>
+            <div>
+              <div>Foundation & Setup</div>
+              <div style="font-size:12px;color:var(--muted);font-weight:400">July 1-7</div>
+            </div>
+          </div>
+          <span class="chevron">▼</span>
+        </div>
+        <div class="week-body">
+          <div style="font-size:13px;color:var(--muted);margin-bottom:12px;">
+            This week is all about setup and learning — no content yet. Understand the market well before publishing.
+          </div>
+          <div class="tasks-grid">
+            <div class="person-tasks">
+              <div class="person-label you">Mohamed Reda (Admin)</div>
+              <div class="task-item" onclick="toggleTask(this)">
+                <div class="task-check">✓</div>
+                <div class="task-text">Create Amazon Associates account ✅ (done)</div>
+              </div>
+              <div class="task-item" onclick="toggleTask(this)">
+                <div class="task-check"></div>
+                <div class="task-text">Create a new Gmail for the project</div>
+              </div>
+              <div class="task-item" onclick="toggleTask(this)">
+                <div class="task-check"></div>
+                <div class="task-text">Open a YouTube account for the niche</div>
+              </div>
+              <div class="task-item" onclick="toggleTask(this)">
+                <div class="task-check"></div>
+                <div class="task-text">Study top 5 competitors in Smart Home</div>
+              </div>
+              <div class="task-item" onclick="toggleTask(this)">
+                <div class="task-check"></div>
+                <div class="task-text">Learn Amazon Associates Dashboard basics</div>
+              </div>
+            </div>
+            <div class="person-tasks">
+              <div class="person-label friend">Hicham</div>
+              <div class="task-item" onclick="toggleTask(this)">
+                <div class="task-check"></div>
+                <div class="task-text">Create TikTok + Pinterest accounts for the project</div>
+              </div>
+              <div class="task-item" onclick="toggleTask(this)">
+                <div class="task-check"></div>
+                <div class="task-text">Install CapCut for mobile editing</div>
+              </div>
+              <div class="task-item" onclick="toggleTask(this)">
+                <div class="task-check"></div>
+                <div class="task-text">Watch 10 successful Smart Home TikTok videos</div>
+              </div>
+              <div class="task-item" onclick="toggleTask(this)">
+                <div class="task-check"></div>
+                <div class="task-text">Create a free Canva account for designs</div>
+              </div>
+              <div class="task-item" onclick="toggleTask(this)">
+                <div class="task-check"></div>
+                <div class="task-text">Analyze successful Pinterest posts in the niche</div>
+              </div>
+            </div>
+          </div>
+          <div class="shared-tasks">
+            <div class="person-label" style="color:var(--accent3)">🤝 Shared Tasks</div>
+            <div class="task-item" onclick="toggleTask(this)">
+              <div class="task-check"></div>
+              <div class="task-text">Define brand name + colors + simple logo</div>
+            </div>
+            <div class="task-item" onclick="toggleTask(this)">
+              <div class="task-check"></div>
+              <div class="task-text">Choose 10 smart home products to promote (Amazon)</div>
+            </div>
+            <div class="task-item" onclick="toggleTask(this)">
+              <div class="task-check"></div>
+              <div class="task-text">Daily 30-min session — review what you learned</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- WEEK 2 -->
+      <div class="week-card w2" id="wk2">
+        <div class="week-progress-bar w2"><div class="week-progress-fill" style="width:0%"></div></div>
+        <div class="week-header" onclick="toggleWeek('wk2')">
+          <div class="week-title">
+            <div class="week-num w2">02</div>
+            <div>
+              <div>First Real Content</div>
+              <div style="font-size:12px;color:var(--muted);font-weight:400">July 8-14</div>
+            </div>
+          </div>
+          <span class="chevron">▼</span>
+        </div>
+        <div class="week-body">
+          <div style="font-size:13px;color:var(--muted);margin-bottom:12px;">
+            Let's start publishing! Quality matters but consistency matters more. Don't aim for perfect — just start.
+          </div>
+          <div class="tasks-grid">
+            <div class="person-tasks">
+              <div class="person-label you">Mohamed Reda — YouTube</div>
+              <div class="task-item" onclick="toggleTask(this)">
+                <div class="task-check"></div>
+                <div class="task-text">Write script for first video (product review)</div>
+              </div>
+              <div class="task-item" onclick="toggleTask(this)">
+                <div class="task-check"></div>
+                <div class="task-text">Film + edit first YouTube video (5-8 min)</div>
+              </div>
+              <div class="task-item" onclick="toggleTask(this)">
+                <div class="task-check"></div>
+                <div class="task-text">Publish video with SEO description + affiliate links</div>
+              </div>
+              <div class="task-item" onclick="toggleTask(this)">
+                <div class="task-check"></div>
+                <div class="task-text">Learn Keyword Research — YouTube and Google</div>
+              </div>
+            </div>
+            <div class="person-tasks">
+              <div class="person-label friend">Hicham — TikTok + Pinterest</div>
+              <div class="task-item" onclick="toggleTask(this)">
+                <div class="task-check"></div>
+                <div class="task-text">Publish 3 short TikTok videos (30-60 sec)</div>
+              </div>
+              <div class="task-item" onclick="toggleTask(this)">
+                <div class="task-check"></div>
+                <div class="task-text">Create 10 Pinterest Pins with links</div>
+              </div>
+              <div class="task-item" onclick="toggleTask(this)">
+                <div class="task-check"></div>
+                <div class="task-text">Learn powerful TikTok Hooks (first 3 seconds)</div>
+              </div>
+              <div class="task-item" onclick="toggleTask(this)">
+                <div class="task-check"></div>
+                <div class="task-text">Analyze TikTok analytics after publishing</div>
+              </div>
+            </div>
+          </div>
+          <div class="shared-tasks">
+            <div class="person-label" style="color:var(--accent3)">🤝 Shared Tasks</div>
+            <div class="task-item" onclick="toggleTask(this)">
+              <div class="task-check"></div>
+              <div class="task-text">Create Blog with Blogger or free WordPress</div>
+            </div>
+            <div class="task-item" onclick="toggleTask(this)">
+              <div class="task-check"></div>
+              <div class="task-text">Write first blog post (product comparison)</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- WEEK 3 -->
+      <div class="week-card w3" id="wk3">
+        <div class="week-progress-bar w3"><div class="week-progress-fill" style="width:0%"></div></div>
+        <div class="week-header" onclick="toggleWeek('wk3')">
+          <div class="week-title">
+            <div class="week-num w3">03</div>
+            <div>
+              <div>Acceleration & Improvement</div>
+              <div style="font-size:12px;color:var(--muted);font-weight:400">July 15-21</div>
+            </div>
+          </div>
+          <span class="chevron">▼</span>
+        </div>
+        <div class="week-body">
+          <div style="font-size:13px;color:var(--muted);margin-bottom:12px;">
+            See what's working and do more of it. Don't change everything — improve what's already working.
+          </div>
+          <div class="tasks-grid">
+            <div class="person-tasks">
+              <div class="person-label you">Mohamed Reda — YouTube + Blog</div>
+              <div class="task-item" onclick="toggleTask(this)">
+                <div class="task-check"></div>
+                <div class="task-text">Publish second YouTube video (or Shorts)</div>
+              </div>
+              <div class="task-item" onclick="toggleTask(this)">
+                <div class="task-check"></div>
+                <div class="task-text">Improve Thumbnails using Canva</div>
+              </div>
+              <div class="task-item" onclick="toggleTask(this)">
+                <div class="task-check"></div>
+                <div class="task-text">Write second SEO article for the blog</div>
+              </div>
+              <div class="task-item" onclick="toggleTask(this)">
+                <div class="task-check"></div>
+                <div class="task-text">Add clear Call-to-Action to all content</div>
+              </div>
+            </div>
+            <div class="person-tasks">
+              <div class="person-label friend">Hicham — TikTok + Pinterest</div>
+              <div class="task-item" onclick="toggleTask(this)">
+                <div class="task-check"></div>
+                <div class="task-text">Publish 5 TikTok videos this week</div>
+              </div>
+              <div class="task-item" onclick="toggleTask(this)">
+                <div class="task-check"></div>
+                <div class="task-text">Create 15 more Pins on Pinterest</div>
+              </div>
+              <div class="task-item" onclick="toggleTask(this)">
+                <div class="task-check"></div>
+                <div class="task-text">Try Trending Sounds on TikTok</div>
+              </div>
+              <div class="task-item" onclick="toggleTask(this)">
+                <div class="task-check"></div>
+                <div class="task-text">Create organized Pinterest Boards for the niche</div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- WEEK 4 -->
+      <div class="week-card w4" id="wk4">
+        <div class="week-progress-bar w4"><div class="week-progress-fill" style="width:0%"></div></div>
+        <div class="week-header" onclick="toggleWeek('wk4')">
+          <div class="week-title">
+            <div class="week-num w4">04</div>
+            <div>
+              <div>Review & Planning for August</div>
+              <div style="font-size:12px;color:var(--muted);font-weight:400">July 22-31</div>
+            </div>
+          </div>
+          <span class="chevron">▼</span>
+        </div>
+        <div class="week-body">
+          <div style="font-size:13px;color:var(--muted);margin-bottom:12px;">
+            Time to review. What worked? What didn't? Plan August based on data — not guesses.
+          </div>
+          <div class="tasks-grid">
+            <div class="person-tasks">
+              <div class="person-label you">Mohamed Reda</div>
+              <div class="task-item" onclick="toggleTask(this)">
+                <div class="task-check"></div>
+                <div class="task-text">Review YouTube Analytics — best videos</div>
+              </div>
+              <div class="task-item" onclick="toggleTask(this)">
+                <div class="task-check"></div>
+                <div class="task-text">Review Amazon Associates — most clicked product</div>
+              </div>
+              <div class="task-item" onclick="toggleTask(this)">
+                <div class="task-check"></div>
+                <div class="task-text">Plan August content (10 ideas)</div>
+              </div>
+            </div>
+            <div class="person-tasks">
+              <div class="person-label friend">Hicham</div>
+              <div class="task-item" onclick="toggleTask(this)">
+                <div class="task-check"></div>
+                <div class="task-text">Review TikTok Analytics — most viewed video</div>
+              </div>
+              <div class="task-item" onclick="toggleTask(this)">
+                <div class="task-check"></div>
+                <div class="task-text">Review Pinterest Analytics — most clicked Pin</div>
+              </div>
+              <div class="task-item" onclick="toggleTask(this)">
+                <div class="task-check"></div>
+                <div class="task-text">Plan TikTok content for August (20 videos)</div>
+              </div>
+            </div>
+          </div>
+          <div class="shared-tasks">
+            <div class="person-label" style="color:var(--accent3)">🤝 Shared Review Session</div>
+            <div class="task-item" onclick="toggleTask(this)">
+              <div class="task-check"></div>
+              <div class="task-text">Compare results: which platform performed best?</div>
+            </div>
+            <div class="task-item" onclick="toggleTask(this)">
+              <div class="task-check"></div>
+              <div class="task-text">Set clear goal for August (first $1 must come!)</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- SKILLS PANEL -->
+  <div id="panel-skills" class="panel">
+    <div class="section-title">📚 Basics You Need to Learn</div>
+    <div class="skills-grid">
+
+      <div class="skill-card">
+        <div class="skill-icon">🔍</div>
+        <div class="skill-name">SEO — Keywords</div>
+        <div class="skill-desc">Learn how people search for Smart Home products. Use Google Keyword Planner or Ubersuggest for free. Focus on keywords like "Best [product] under $100" or "[product] review 2025".</div>
+        <span class="skill-priority priority-high">🔴 High Priority</span>
+      </div>
+
+      <div class="skill-card">
+        <div class="skill-icon">✍️</div>
+        <div class="skill-name">Copywriting — Persuasive Writing</div>
+        <div class="skill-desc">Learn how to write catchy headlines, powerful video Hooks, and compelling product descriptions. AIDA rule: Attention → Interest → Desire → Action.</div>
+        <span class="skill-priority priority-high">🔴 High Priority</span>
+      </div>
+
+      <div class="skill-card">
+        <div class="skill-icon">📊</div>
+        <div class="skill-name">Amazon Associates</div>
+        <div class="skill-desc">Understand the dashboard, how to build affiliate links, usage rules (always disclose your commission), and how to improve Conversion rates.</div>
+        <span class="skill-priority priority-high">🔴 High Priority</span>
+      </div>
+
+      <div class="skill-card">
+        <div class="skill-icon">🎯</div>
+        <div class="skill-name">Paid Ads</div>
+        <div class="skill-desc">Learn how to run ads on Google, TikTok, Pinterest, and YouTube. The core is understanding Targeting, Budget, and how to measure ROI. Don't start with ads before you have working organic content.</div>
+        <span class="skill-priority priority-mid">🟡 Important</span>
+      </div>
+
+      <div class="skill-card">
+        <div class="skill-icon">🎬</div>
+        <div class="skill-name">Simple Video Production</div>
+        <div class="skill-desc">You don't need an expensive camera — your phone is enough. Learn good lighting, clear audio, and editing with CapCut (free). Your first video doesn't have to be perfect.</div>
+        <span class="skill-priority priority-mid">🟡 Important</span>
+      </div>
+
+
+      <div class="skill-card">
+        <div class="skill-icon">📌</div>
+        <div class="skill-name">Pinterest Strategy</div>
+        <div class="skill-desc">Pinterest is a search engine, not social media! Good images + keywords = free traffic for years. Focus on Infographics and product comparisons.</div>
+        <span class="skill-priority priority-mid">🟡 Important</span>
+      </div>
+
+      <div class="skill-card">
+        <div class="skill-icon">📝</div>
+        <div class="skill-name">Blog + SEO Content</div>
+        <div class="skill-desc">Good articles bring traffic from Google for years. Learn article structure: H1, H2, Internal Links, and how to naturally add affiliate links.</div>
+        <span class="skill-priority priority-mid">🟡 Important</span>
+      </div>
+
+      <div class="skill-card">
+        <div class="skill-icon">🎵</div>
+        <div class="skill-name">TikTok Algorithm</div>
+        <div class="skill-desc">The Hook in the first 3 seconds determines everything. Use Trending Sounds, write Captions in English for the US market, and post 1-2 videos daily at first.</div>
+        <span class="skill-priority priority-mid">🟡 Important</span>
+      </div>
+
+      <div class="skill-card">
+        <div class="skill-icon">📈</div>
+        <div class="skill-name">Analytics — Reading the Numbers</div>
+        <div class="skill-desc">Learn to read YouTube Studio, TikTok Analytics, Pinterest Analytics, and Amazon Reports. Numbers tell you what works — not guesswork.</div>
+        <span class="skill-priority priority-low">🟢 Learn Gradually</span>
+      </div>
+
+    </div>
+
+    <div style="margin-top:24px;background:rgba(0,212,170,0.05);border:1px solid rgba(0,212,170,0.2);border-radius:14px;padding:20px;">
+      <div style="font-weight:700;margin-bottom:12px;color:var(--accent)">⚠️ Important Amazon Associates Rules</div>
+      <div style="font-size:13px;color:var(--muted);line-height:2;">
+        ✅ You must add a Disclosure in every piece of content: <em style="color:var(--text)">"As an Amazon Associate I earn from qualifying purchases"</em><br>
+        ✅ Don't click your own links<br>
+        ✅ Don't share them in Emails<br>
+        ✅ You must make 3 sales in the first 180 days (you have until September!) — this is the most important thing now<br>
+        ✅ Smart Home commission rates range from 3%-8% depending on the category
+      </div>
+    </div>
+  </div>
+
+  <!-- TRACKER PANEL -->
+  <div id="panel-tracker" class="panel">
+    <div class="section-title">📊 Track Progress</div>
+
+    <div class="tracker-section">
+      <div style="font-size:15px;font-weight:700;margin-bottom:14px;color:var(--accent)">🎯 First Goal: 3 Sales Before September</div>
+      <div class="progress-section">
+        <div class="progress-label">
+          <span>Amazon Sales</span>
+          <span id="sales-val">0 / 3</span>
+        </div>
+        <div class="progress-track">
+          <div class="progress-fill" id="sales-bar" style="width:0%;background:var(--accent)"></div>
+        </div>
+        <div style="font-size:12px;color:var(--muted)">⚡ This is most important now — 3 sales needed to keep your account</div>
+      </div>
+    </div>
+
+    <div class="metric-row">
+      <div class="metric-input-card">
+        <div class="metric-label">💰 Total Earnings ($)</div>
+        <input class="metric-input" id="earnings" type="number" value="0" min="0" onchange="saveData()">
+      </div>
+      <div class="metric-input-card">
+        <div class="metric-label">🖱️ Amazon Clicks</div>
+        <input class="metric-input" id="clicks" type="number" value="63" min="0" onchange="saveData()">
+      </div>
+    </div>
+
+    <div class="metric-row">
+      <div class="metric-input-card">
+        <div class="metric-label">🎬 YouTube Videos</div>
+        <input class="metric-input" id="yt-vids" type="number" value="0" min="0" onchange="saveData()">
+      </div>
+      <div class="metric-input-card">
+        <div class="metric-label">🎵 TikTok Videos</div>
+        <input class="metric-input" id="tt-vids" type="number" value="0" min="0" onchange="saveData()">
+      </div>
+    </div>
+
+    <div class="metric-row">
+      <div class="metric-input-card">
+        <div class="metric-label">📌 Pinterest Pins</div>
+        <input class="metric-input" id="pins" type="number" value="0" min="0" onchange="saveData()">
+      </div>
+      <div class="metric-input-card">
+        <div class="metric-label">📝 Blog Articles</div>
+        <input class="metric-input" id="blogs" type="number" value="0" min="0" onchange="saveData()">
+      </div>
+    </div>
+
+    <div class="tracker-section" style="margin-top:20px;">
+      <div style="font-size:15px;font-weight:700;margin-bottom:14px;">📅 July Progress</div>
+      <div class="progress-section">
+        <div class="progress-label"><span>Week 1</span><span id="w1p">0%</span></div>
+        <div class="progress-track"><div class="progress-fill" id="w1bar" style="width:0%;background:var(--accent)"></div></div>
+      </div>
+      <div class="progress-section">
+        <div class="progress-label"><span>Week 2</span><span id="w2p">0%</span></div>
+        <div class="progress-track"><div class="progress-fill" id="w2bar" style="width:0%;background:var(--accent2)"></div></div>
+      </div>
+      <div class="progress-section">
+        <div class="progress-label"><span>Week 3</span><span id="w3p">0%</span></div>
+        <div class="progress-track"><div class="progress-fill" id="w3bar" style="width:0%;background:var(--accent3)"></div></div>
+      </div>
+      <div class="progress-section">
+        <div class="progress-label"><span>Week 4</span><span id="w4p">0%</span></div>
+        <div class="progress-track"><div class="progress-fill" id="w4bar" style="width:0%;background:var(--gold)"></div></div>
+      </div>
+    </div>
+
+    <div>
+      <div class="section-title" style="margin-top:20px;">📝 Your Notes</div>
+      <textarea class="notes-area" id="notes" placeholder="Write here any notes, ideas, or problems you faced this week..."></textarea>
+      <button class="save-btn" onclick="saveAll()">💾 Save Everything</button>
+    </div>
+  </div>
+
+</div>
+
+
+  <!-- ADS PANEL -->
+  <div id="panel-ads" class="panel">
+    <div class="section-title">🎯 Paid Advertising Strategy</div>
+    <div style="font-size:13px;color:var(--muted);margin-bottom:20px;line-height:1.8;">
+      Paid ads are not for beginners — first understand what works organically. Then use ads to amplify what's working.
+    </div>
+    <div class="ads-tabs-row">
+      <button class="ads-tab-btn active" data-ad="google"   onclick="renderAds('google')">🔍 Google</button>
+      <button class="ads-tab-btn"        data-ad="tiktok"   onclick="renderAds('tiktok')">🎵 TikTok</button>
+      <button class="ads-tab-btn"        data-ad="pinterest" onclick="renderAds('pinterest')">📌 Pinterest</button>
+      <button class="ads-tab-btn"        data-ad="youtube"  onclick="renderAds('youtube')">▶️ YouTube</button>
+      <button class="ads-tab-btn"        data-ad="blog"     onclick="renderAds('blog')">📝 Blog</button>
+    </div>
+    <div id="ads-detail"></div>
+  </div>
+
+  <!-- GOALS PANEL -->
+  <div id="panel-goals" class="panel">
+    <div class="section-title">🏆 Monthly Goals — July 2025 → June 2026</div>
+    <div class="goals-chart-wrap">
+      <div class="goals-chart-title">📈 Target Earnings Chart</div>
+      <div id="goals-chart"></div>
+    </div>
+    <div id="goals-rows"></div>
+    <button class="goals-save-btn" id="goalsSaveBtn" onclick="saveGoals()">💾 Save Goals</button>
+  </div>
+
+
+
+  <!-- COURSES PANEL -->
+  <div id="panel-courses" class="panel">
+    <div class="section-title">🎓 Recommended Starter Courses</div>
+    <div style="font-size:13px;color:var(--muted);margin-bottom:20px;line-height:1.8;">
+      All these courses are free or nearly free — sorted by priority. Start from the top.
+    </div>
+
+    <!-- PRIORITY 1 -->
+    <div class="section-title" style="font-size:15px;color:var(--accent)">🔴 Priority 1 — Start Immediately</div>
+
+    <div class="course-card" style="border-color:rgba(0,212,170,0.3)">
+      <div class="course-header">
+        <div class="course-icon" style="background:rgba(0,212,170,0.1)">🔍</div>
+        <div>
+          <div class="course-name">SEO Crash Course — Semrush Academy</div>
+          <div class="course-meta">⏱ 50 min · Free · Certificate ✅</div>
+        </div>
+        <span class="course-badge free">Free</span>
+      </div>
+      <div class="course-desc">Best SEO course for beginners — Brian Dean explains how to rank on Google step by step. Perfect for Smart Home niche.</div>
+      <a class="course-link" href="https://www.semrush.com/academy/courses/seo-crash-course-with-brian-dean/" target="_blank">🔗 Open Course</a>
+    </div>
+
+    <div class="course-card" style="border-color:rgba(0,212,170,0.3)">
+      <div class="course-header">
+        <div class="course-icon" style="background:rgba(0,212,170,0.1)">📊</div>
+        <div>
+          <div class="course-name">Amazon Associates Getting Started</div>
+          <div class="course-meta">⏱ 1-2 hrs · Free · Inside Dashboard</div>
+        </div>
+        <span class="course-badge free">Free</span>
+      </div>
+      <div class="course-desc">The official Amazon Associates course — found in your account under "Help". Explains how to build links, track earnings, and avoid violations.</div>
+      <a class="course-link" href="https://affiliate-program.amazon.com/" target="_blank">🔗 Open Account</a>
+    </div>
+
+    <div class="course-card" style="border-color:rgba(0,212,170,0.3)">
+      <div class="course-header">
+        <div class="course-icon" style="background:rgba(0,212,170,0.1)">🔗</div>
+        <div>
+          <div class="course-name">Affiliate Marketing Mastery — Matt Diggity</div>
+          <div class="course-meta">⏱ 3-4 hrs · Free on YouTube</div>
+        </div>
+        <span class="course-badge free">Free</span>
+      </div>
+      <div class="course-desc">Matt Diggity is one of the best Affiliate Marketing experts in the world. He explains SEO + Affiliate in a 100% practical way. Search for him directly on YouTube.</div>
+      <a class="course-link" href="https://www.youtube.com/@MattDiggity" target="_blank">🔗 YouTube Channel</a>
+    </div>
+
+    <!-- PRIORITY 2 -->
+    <div class="section-title" style="font-size:15px;color:var(--accent2);margin-top:24px">🟡 Priority 2 — After Two Weeks</div>
+
+    <div class="course-card" style="border-color:rgba(255,107,53,0.3)">
+      <div class="course-header">
+        <div class="course-icon" style="background:rgba(255,107,53,0.1)">✍️</div>
+        <div>
+          <div class="course-name">Copywriting for Conversions</div>
+          <div class="course-meta">⏱ 1.5-3 hrs · Free · 8 modules</div>
+        </div>
+        <span class="course-badge free">Free</span>
+      </div>
+      <div class="course-desc">Free course explaining how to write product reviews that convince people to buy — from headline writing to Call to Action. Perfect for Blog and YouTube.</div>
+      <a class="course-link" href="https://www.onepagecrm.com/blog/resources-to-increase-affiliate-sales/" target="_blank">🔗 Discover Course</a>
+    </div>
+
+    <div class="course-card" style="border-color:rgba(255,107,53,0.3)">
+      <div class="course-header">
+        <div class="course-icon" style="background:rgba(255,107,53,0.1)">🎵</div>
+        <div>
+          <div class="course-name">TikTok for Business — TikTok Academy</div>
+          <div class="course-meta">⏱ 2 hrs · Free · Certificate ✅</div>
+        </div>
+        <span class="course-badge free">Free</span>
+      </div>
+      <div class="course-desc">The official TikTok course — explains the algorithm, how to create viral content, and how to effectively target the US and Canadian audience.</div>
+      <a class="course-link" href="https://www.tiktok.com/business/en-US/academy" target="_blank">🔗 TikTok Academy</a>
+    </div>
+
+    <div class="course-card" style="border-color:rgba(255,107,53,0.3)">
+      <div class="course-header">
+        <div class="course-icon" style="background:rgba(255,107,53,0.1)">📌</div>
+        <div>
+          <div class="course-name">Pinterest Business Academy</div>
+          <div class="course-meta">⏱ 1-2 hrs · Free · Official</div>
+        </div>
+        <span class="course-badge free">Free</span>
+      </div>
+      <div class="course-desc">The official Pinterest course — explains how to optimize Pins, target your audience, and convert traffic into affiliate sales.</div>
+      <a class="course-link" href="https://business.pinterest.com/en-us/pinterest-academy/" target="_blank">🔗 Pinterest Academy</a>
+    </div>
+
+    <!-- PRIORITY 3 -->
+    <div class="section-title" style="font-size:15px;color:var(--accent3);margin-top:24px">🟢 Priority 3 — Month 2+</div>
+
+    <div class="course-card" style="border-color:rgba(124,58,237,0.3)">
+      <div class="course-header">
+        <div class="course-icon" style="background:rgba(124,58,237,0.1)">▶️</div>
+        <div>
+          <div class="course-name">YouTube Creator Academy</div>
+          <div class="course-meta">⏱ Multi-level · Free · Official</div>
+        </div>
+        <span class="course-badge free">Free</span>
+      </div>
+      <div class="course-desc">The official YouTube Academy — explains how to grow your channel, improve video SEO, and increase Watch Time which is the key to the Algorithm.</div>
+      <a class="course-link" href="https://creatoracademy.youtube.com/" target="_blank">🔗 YouTube Academy</a>
+    </div>
+
+    <div class="course-card" style="border-color:rgba(124,58,237,0.3)">
+      <div class="course-header">
+        <div class="course-icon" style="background:rgba(124,58,237,0.1)">🔍</div>
+        <div>
+          <div class="course-name">Ahrefs Academy — Blogging for Business</div>
+          <div class="course-meta">⏱ ~2 hrs · Free · Advanced</div>
+        </div>
+        <span class="course-badge free">Free</span>
+      </div>
+      <div class="course-desc">One of the best blog SEO courses — explains Keyword Research, Link Building, and how to write articles that rank on Google in a competitive niche like Smart Home.</div>
+      <a class="course-link" href="https://ahrefs.com/academy" target="_blank">🔗 Ahrefs Academy</a>
+    </div>
+
+    <div style="margin-top:24px;background:rgba(245,158,11,0.05);border:1px solid rgba(245,158,11,0.2);border-radius:14px;padding:20px;">
+      <div style="font-weight:700;color:var(--gold);margin-bottom:12px;">💡 Suggested Learning Plan for July</div>
+      <div style="font-size:13px;color:var(--muted);line-height:2.2;">
+        📅 <strong style="color:var(--text)">Week 1:</strong> Semrush SEO + Amazon Associates<br>
+        📅 <strong style="color:var(--text)">Week 2:</strong> Matt Diggity YouTube + Copywriting for Conversions<br>
+        📅 <strong style="color:var(--text)">Week 3:</strong> TikTok Academy + Pinterest Academy<br>
+        📅 <strong style="color:var(--text)">Week 4:</strong> YouTube Creator Academy + Practical Application
+      </div>
+    </div>
+  </div>
+
+
+<div class="toast" id="toast">✅ Saved!</div>
+
+<script>
+function showPanel(name) {
+  document.querySelectorAll('.panel').forEach(p => p.classList.remove('active'));
+  document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+  document.getElementById('panel-' + name).classList.add('active');
+  event.target.classList.add('active');
+}
+
+function toggleWeek(id) {
+  document.getElementById(id).classList.toggle('open');
+}
+
+function toggleTask(el) {
+  el.classList.toggle('done');
+  el.querySelector('.task-check').textContent = el.classList.contains('done') ? '✓' : '';
+  updateWeekProgress();
+  saveData();
+}
+
+function updateWeekProgress() {
+  const weeks = ['wk1','wk2','wk3','wk4'];
+  const bars = ['w1bar','w2bar','w3bar','w4bar'];
+  const percEls = ['w1p','w2p','w3p','w4p'];
+  weeks.forEach((wid, i) => {
+    const card = document.getElementById(wid);
+    const tasks = card.querySelectorAll('.task-item');
+    const done = card.querySelectorAll('.task-item.done').length;
+    const pct = tasks.length ? Math.round(done/tasks.length*100) : 0;
+    card.querySelector('.week-progress-fill').style.width = pct + '%';
+    if (document.getElementById(bars[i])) {
+      document.getElementById(bars[i]).style.width = pct + '%';
+      document.getElementById(percEls[i]).textContent = pct + '%';
+    }
+  });
+}
+
+// saveData handled by auth system below
+
+function saveAll() {
+  saveData();
+  const toast = document.getElementById('toast');
+  toast.classList.add('show');
+  setTimeout(() => toast.classList.remove('show'), 2500);
+}
+
+function updateSalesBar() {
+  // estimate sales from tasks done + earnings
+  const earnings = parseFloat(document.getElementById('earnings').value) || 0;
+  const sales = Math.min(3, Math.floor(earnings / 15));
+  document.getElementById('sales-val').textContent = sales + ' / 3';
+  document.getElementById('sales-bar').style.width = (sales/3*100) + '%';
+}
+
+
+
+
+// ===== GOALS DATA =====
+const defaultGoals = [
+  { month:'July 2025',   earn:0,    content:5,  clicks:150,  note:'Learning & setup month' },
+  { month:'August 2025',  earn:15,   content:12, clicks:300,  note:'First $1 — most important moment!' },
+  { month:'September 2025', earn:60,   content:20, clicks:600,  note:'3 sales to keep Amazon account' },
+  { month:'October 2025', earn:150,  content:25, clicks:1000, note:'Growth compounding in Google + Pinterest' },
+  { month:'November 2025',  earn:350,  content:30, clicks:2000, note:'Black Friday — best time!' },
+  { month:'December 2025',  earn:600,  content:30, clicks:3000, note:'Christmas — peak sales' },
+  { month:'January 2026',  earn:400,  content:25, clicks:2500, note:'Natural post-holiday dip' },
+  { month:'February 2026', earn:500,  content:25, clicks:2800, note:'Valentine — smart opportunity' },
+  { month:'March 2026',   earn:700,  content:30, clicks:3500, note:'Growth acceleration begins' },
+  { month:'April 2026',  earn:1000, content:35, clicks:5000, note:'First $1000 in a month!' },
+  { month:'May 2026',    earn:2000, content:40, clicks:8000, note:'Scale up — increase Ads' },
+  { month:'June 2026',  earn:3500, content:45, clicks:12000,note:'Approaching the big goal' },
+];
+
+function loadGoals() {
+  try { const s=localStorage.getItem('smh_goals'); return s?JSON.parse(s):defaultGoals.map(g=>({...g})); }
+  catch(e){ return defaultGoals.map(g=>({...g})); }
+}
+function saveGoals() {
+  const rows=document.querySelectorAll('.goal-row');
+  const goals=[];
+  rows.forEach(row=>{
+    goals.push({ month:row.dataset.month,
+      earn:parseFloat(row.querySelector('.g-earn').value)||0,
+      content:parseInt(row.querySelector('.g-content').value)||0,
+      clicks:parseInt(row.querySelector('.g-clicks').value)||0,
+      note:row.querySelector('.g-note').value||'' });
+  });
+  localStorage.setItem('smh_goals',JSON.stringify(goals));
+  renderGoalChart(goals);
+  const t=document.getElementById('toast'); t.classList.add('show'); setTimeout(()=>t.classList.remove('show'),2500);
+}
+function renderGoals() {
+  const goals=loadGoals();
+  const container=document.getElementById('goals-rows');
+  if(!container) return;
+  container.innerHTML='';
+  const colors=['#00d4aa','#ff6b35','#7c3aed','#f59e0b'];
+  goals.forEach((g,i)=>{
+    const c=colors[i%4];
+    const row=document.createElement('div');
+    row.className='goal-row'; row.dataset.month=g.month;
+    const dis = (typeof currentRole !== 'undefined' && currentRole === 'viewer') ? 'disabled' : '';
+    const disStyle = (typeof currentRole !== 'undefined' && currentRole === 'viewer') ? 'style="opacity:0.6;cursor:not-allowed"' : '';
+    row.innerHTML=`
+      <div class="goal-month" style="border-color:${c};color:${c}">${g.month}</div>
+      <div class="goal-fields">
+        <div class="goal-field"><div class="goal-field-label">💰 Earnings ($)</div><input class="goal-input g-earn" type="number" value="${g.earn}" min="0" ${dis} ${disStyle}></div>
+        <div class="goal-field"><div class="goal-field-label">🎬 Content</div><input class="goal-input g-content" type="number" value="${g.content}" min="0" ${dis} ${disStyle}></div>
+        <div class="goal-field"><div class="goal-field-label">🖱️ Clicks</div><input class="goal-input g-clicks" type="number" value="${g.clicks}" min="0" ${dis} ${disStyle}></div>
+        <div class="goal-field" style="grid-column:1/-1"><div class="goal-field-label">📝 Note</div><input class="goal-input g-note" type="text" value="${g.note}" style="font-size:13px;font-family:Inter,sans-serif" ${dis} ${disStyle}></div>
+      </div>`;
+    container.appendChild(row);
+  });
+  renderGoalChart(goals);
+}
+function renderGoalChart(goals) {
+  const bars=document.getElementById('goals-chart');
+  if(!bars) return;
+  bars.innerHTML='';
+  const maxE=Math.max(...goals.map(g=>g.earn),1);
+  const colors=['#00d4aa','#ff6b35','#7c3aed','#f59e0b'];
+  goals.forEach((g,i)=>{
+    const pct=Math.max(2,Math.round(g.earn/maxE*100));
+    const c=colors[i%4];
+    const b=document.createElement('div'); b.className='chart-bar-wrap';
+    b.innerHTML=`<div class="chart-bar-label" style="color:${c}">$${g.earn>=1000?(g.earn/1000).toFixed(1)+'K':g.earn}</div><div class="chart-bar-track"><div class="chart-bar-fill" style="height:${pct}%;background:${c}"></div></div><div class="chart-bar-month">${g.month.split(' ')[0]}</div>`;
+    bars.appendChild(b);
+  });
+}
+
+// ===== ADS DATA =====
+const adsData = {
+  google:  { name:'Google Ads',    icon:'🔍', color:'#4285f4', when:'Month 4+', budget:'$5-$10/day', type:'Search Ads', steps:['Create Google Ads account','Choose keywords: "best smart home 2025"','Write 3 different ads (A/B Test)','Direct the ad to your blog, not Amazon directly','Track Conversion via Google Analytics'], tip:'⚠️ Amazon prohibits linking paid ads directly to affiliate links — you need an intermediate Landing Page' },
+  tiktok:  { name:'TikTok Ads',    icon:'🎵', color:'#ff0050', when:'Month 3+', budget:'$20/day', type:'Spark Ads (boost your videos)', steps:['Create TikTok Ads Manager','Start with Spark Ads on a successful video','Audience: USA/Canada, age 25-45','$20/day budget for 7 days','Track Link Clicks to measure ROI'], tip:'✅ Spark Ads are the cheapest and most effective — they boost content with natural engagement' },
+  pinterest:{ name:'Pinterest Ads', icon:'📌', color:'#e60023', when:'Month 2+', budget:'$5-$15/day', type:'Promoted Pins', steps:['Pinterest Business Account','Choose Pin with best engagement','Audience: USA/Canada, women 25-45','Goal: Traffic to the blog','Test for at least 14 days'], tip:'✅ Pinterest Ads are cheap and give consistent results — ROI improves over time' },
+  youtube:  { name:'YouTube Ads',   icon:'▶️', color:'#ff0000', when:'Month 5+', budget:'$10-$20/day', type:'In-Stream Ads', steps:['Same Google Ads account','Create Video Campaign','Target Smart Home channels','Video 15-30 sec with strong Hook','Goal: blog visits or channel subscription'], tip:'⚡ You only pay if the viewer watches 30 seconds or clicks' },
+  blog:     { name:'Blog Ads',      icon:'📝', color:'#00d4aa', when:'Month 6+', budget:'$0 with AdSense', type:'Google AdSense → Ezoic → Mediavine', steps:['Start with Google AdSense (from first article)','After 10K visits/month: Ezoic','After 50K visits/month: Mediavine','Add Display Ads without affecting UX','Combine AdSense + Affiliate to multiply earnings'], tip:'💡 Your blog can earn from two sources: Affiliate Commissions + Ad Revenue' },
+};
+
+function renderAds(key) {
+  const ad=adsData[key];
+  document.querySelectorAll('.ads-tab-btn').forEach(b=>b.classList.toggle('active', b.dataset.ad===key));
+  const d=document.getElementById('ads-detail');
+  if(!d) return;
+  d.innerHTML=`
+    <div class="ads-card" style="border-color:${ad.color}20">
+      <div class="ads-header" style="background:${ad.color}15;border-bottom:1px solid ${ad.color}30">
+        <span style="font-size:28px">${ad.icon}</span>
+        <div><div style="font-size:20px;font-weight:700;color:${ad.color}">${ad.name}</div><div style="font-size:12px;color:var(--muted)">${ad.type}</div></div>
+      </div>
+      <div class="ads-meta">
+        <div class="ads-meta-item"><div class="ads-meta-label">⏰ When to Start</div><div class="ads-meta-val">${ad.when}</div></div>
+        <div class="ads-meta-item"><div class="ads-meta-label">💵 Budget</div><div class="ads-meta-val">${ad.budget}</div></div>
+      </div>
+      <div class="ads-steps-title">Getting Started:</div>
+      ${ad.steps.map((s,i)=>`<div class="ads-step"><div class="ads-step-num" style="background:${ad.color}20;color:${ad.color}">${i+1}</div><div class="ads-step-text">${s}</div></div>`).join('')}
+      <div class="ads-tip">${ad.tip}</div>
+    </div>`;
+}
+
+
+
+// ===== AUTH =====
+const USERS = {
+  'mohamedreda': { pass:'Yas2003', name:'Mohamed Reda (Admin) ', role:'admin', cls:'reda', key:'smh_reda' },
+  'hicham':      { pass:'Yas2026', name:'Hicham ',              role:'viewer', cls:'hicham', key:'smh_shared' }
+};
+// Hicham uses same data key so he sees Reda's data (read-only)
+let currentUser = null;
+let currentRole = null;
+
+function selectUser(who) {
+  document.getElementById('btnReda').classList.toggle('selected', who==='reda');
+  document.getElementById('btnHicham').classList.toggle('selected', who==='hicham');
+  document.getElementById('loginUser').value = who==='reda' ? 'mohamedreda' : 'hicham';
+  document.getElementById('loginPass').value = '';
+  document.getElementById('loginPass').focus();
+}
+function doLogin() {
+  const u = document.getElementById('loginUser').value.trim().toLowerCase();
+  const p = document.getElementById('loginPass').value;
+  const err = document.getElementById('loginError');
+  if (USERS[u] && USERS[u].pass === p) {
+    currentUser = u;
+    currentRole = USERS[u].role;
+    sessionStorage.setItem('smh_user', u);
+    document.getElementById('loginOverlay').style.display = 'none';
+    document.getElementById('userBar').style.display = 'flex';
+    const nb = document.getElementById('userBarName');
+    nb.textContent = '👋 ' + USERS[u].name;
+    nb.className = 'user-bar-name ' + USERS[u].cls;
+    // Role badge
+    document.getElementById('roleBadge').textContent = currentRole === 'admin' ? '🔑 Admin' : '👁️ Viewer';
+    document.getElementById('roleBadge').style.color = currentRole === 'admin' ? 'var(--accent)' : 'var(--accent2)';
+    err.style.display = 'none';
+    applyRoleRestrictions();
+    loadUserData(USERS[u].key);
+  } else {
+    err.style.display = 'block';
+  }
+}
+
+function applyRoleRestrictions() {
+  // Admin: full access. Viewer: inputs disabled, save hidden, tasks only their own
+  const isAdmin = currentRole === 'admin';
+  // Disable all number/text inputs for viewer
+  document.querySelectorAll('.metric-input, .notes-area, .goal-input').forEach(el => {
+    el.disabled = !isAdmin;
+    el.style.opacity = isAdmin ? '1' : '0.6';
+    el.style.cursor = isAdmin ? '' : 'not-allowed';
+  });
+  // Hide save buttons for viewer
+  document.querySelectorAll('.save-btn, .goals-save-btn').forEach(el => {
+    el.style.display = isAdmin ? '' : 'none';
+  });
+  // Task items: viewer can only tick tasks in their column (friend column)
+  document.querySelectorAll('.person-tasks').forEach((col, i) => {
+    const isHichamCol = col.querySelector('.person-label.friend') !== null;
+    col.querySelectorAll('.task-item').forEach(t => {
+      if (!isAdmin) {
+        // viewer can only click tasks in their own column
+        t.style.cursor = isHichamCol ? 'pointer' : 'not-allowed';
+        t.style.opacity = isHichamCol ? '1' : '0.5';
+        if (!isHichamCol) t.onclick = null;
+      }
+    });
+  });
+}
+
+function loadUserData(key) {
+  try {
+    const saved = localStorage.getItem(key);
+    if (!saved) return;
+    const d = JSON.parse(saved);
+    if (d.earnings) document.getElementById('earnings').value = d.earnings;
+    if (d.clicks)   document.getElementById('clicks').value   = d.clicks;
+    if (d.ytVids)   document.getElementById('yt-vids').value  = d.ytVids;
+    if (d.ttVids)   document.getElementById('tt-vids').value  = d.ttVids;
+    if (d.pins)     document.getElementById('pins').value     = d.pins;
+    if (d.blogs)    document.getElementById('blogs').value    = d.blogs;
+    if (d.notes)    document.getElementById('notes').value    = d.notes;
+    if (d.tasks) {
+      document.querySelectorAll('.task-item').forEach((t,i)=>{
+        if(d.tasks[i]){ t.classList.add('done'); t.querySelector('.task-check').textContent='✓'; }
+      });
+    }
+    updateWeekProgress(); updateSalesBar();
+    // load goals
+    const gs = localStorage.getItem('smh_goals');
+    if (gs) { localStorage.setItem('smh_goals', gs); }
+    renderGoals();
+  } catch(e){}
+}
+
+function doLogout() {
+  sessionStorage.removeItem('smh_user');
+  currentUser = null; currentRole = null;
+  document.getElementById('loginOverlay').style.display = 'flex';
+  document.getElementById('userBar').style.display = 'none';
+  document.getElementById('loginUser').value = '';
+  document.getElementById('loginPass').value = '';
+}
+
+function saveData() {
+  if (!currentUser || currentRole !== 'admin') return;
+  try {
+    const data = {
+      earnings: document.getElementById('earnings').value,
+      clicks:   document.getElementById('clicks').value,
+      ytVids:   document.getElementById('yt-vids').value,
+      ttVids:   document.getElementById('tt-vids').value,
+      pins:     document.getElementById('pins').value,
+      blogs:    document.getElementById('blogs').value,
+      notes:    document.getElementById('notes').value,
+      tasks: {}
+    };
+    document.querySelectorAll('.task-item').forEach((t,i)=>{ data.tasks[i]=t.classList.contains('done'); });
+    localStorage.setItem(USERS[currentUser].key, JSON.stringify(data));
+    // also save as shared so hicham sees updates
+    localStorage.setItem('smh_shared', JSON.stringify(data));
+    updateSalesBar();
+  } catch(e){}
+}
+
+// Auto-login if session active
+const _sess = sessionStorage.getItem('smh_user');
+if (_sess && USERS[_sess]) {
+  document.getElementById('loginUser').value = _sess;
+  document.getElementById('loginPass').value = USERS[_sess].pass;
+  doLogin();
+}
+
+// Init UI (after all functions defined)
+renderAds('google');
+renderGoals();
+document.getElementById('wk1').classList.add('open');
+
+</script>
+</body>
+</html>
